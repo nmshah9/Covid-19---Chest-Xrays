@@ -83,7 +83,7 @@ def main():
         st.error(
             f"No trained model found in `{MODEL_DIR}/`. "
             f"Run `python train.py` (or the notebook end-to-end) first "
-            f"to create `{MODEL_DIR}/{MODEL_NAME}.keras`."
+            f"to create `{MODEL_DIR}/{MODEL_NAME}.tflite`."
         )
         return
 
