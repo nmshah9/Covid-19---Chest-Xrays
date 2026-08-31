@@ -167,3 +167,17 @@ def main():
 if __name__ == "__main__":
     main()
     
+# ============================================================
+# FOOTER
+# ============================================================
+
+st.markdown("---")
+
+st.markdown("""
+<div style='text-align: center;'>
+
+###  🫁 COVID-19 Chest X-ray Classifier using Machine Learning
+Built with ❤️ using Streamlit | Developed by nmshah9
+
+</div>
+""", unsafe_allow_html=True)
