@@ -31,6 +31,18 @@ MODEL_DIR = "models"
 
 st.set_page_config(page_title="COVID-19 X-ray Classifier", page_icon="🫁", layout="centered")
 
+# ============================================================
+# LOAD BANNER
+# ============================================================
+
+banner = Image.open("banner.png")
+
+# ============================================================
+# DISPLAY BANNER
+# ============================================================
+
+st.image(banner, use_container_width=True)
+
 @st.cache_resource(show_spinner="Loading TFLite model...")
 def get_interpreter_and_metadata():
     """
