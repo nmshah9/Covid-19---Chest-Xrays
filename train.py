@@ -434,9 +434,24 @@ print(f"Best model by test accuracy: {best_model_name} "
 
 keras_path, weights_path = save_model_robust(best_model, MODEL_DIR, "best_model")
 
-# Save a small metadata file the app reads to know which architecture the
-# saved weights belong to (needed for the weights-only fallback reload path)
-# and which class names go with which output index.
+# --- NEW: Export to TFLite (both float32 and int8 quantized) ---
+import tensorflow as tf
+
+# Float32 TFLite
+converter = tf.lite.TFLiteConverter.from_keras_model(best_model)
+tflite_model = converter.convert()
+with open(os.path.join(MODEL_DIR, "best_model.tflite"), "wb") as f:
+    f.write(tflite_model)
+print(f"Saved float32 TFLite model to: {MODEL_DIR}/best_model.tflite")
+
+# Int8 quantized TFLite
+converter.optimizations = [tf.lite.Optimize.DEFAULT]
+quant_tflite_model = converter.convert()
+with open(os.path.join(MODEL_DIR, "best_model_int8.tflite"), "wb") as f:
+    f.write(quant_tflite_model)
+print(f"Saved int8 quantized TFLite model to: {MODEL_DIR}/best_model_int8.tflite")
+
+# Save metadata
 metadata = {
     "best_model_name": best_model_name,
     "img_size": list(IMG_SIZE),
@@ -446,6 +461,11 @@ metadata = {
 }
 with open(os.path.join(MODEL_DIR, "metadata.json"), "w") as f:
     json.dump(metadata, f, indent=2)
+
+print(f"\nSaved model to: {keras_path}")
+print(f"Saved weights fallback to: {weights_path}")
+print(f"Saved metadata to: {os.path.join(MODEL_DIR, 'metadata.json')}")
+print("\nDONE. You can now run:  streamlit run app.py"
 
 print(f"\nSaved model to: {keras_path}")
 print(f"Saved weights fallback to: {weights_path}")
