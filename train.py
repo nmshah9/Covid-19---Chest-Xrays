@@ -458,6 +458,7 @@ metadata = {
     "class_names": CLASS_NAMES,
     "test_accuracy": float(best_row["test_accuracy"]),
     "is_transfer_model": "Transfer" in best_model_name,
+    "quantization": "int8 dynamic-range (post-training)",  # or "float32"
 }
 with open(os.path.join(MODEL_DIR, "metadata.json"), "w") as f:
     json.dump(metadata, f, indent=2)
