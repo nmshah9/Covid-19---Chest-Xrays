@@ -1,0 +1,19 @@
+{
+  "best_model_name": "Model 1 - Basic CNN",
+  "img_size": [
+    128,
+    128
+  ],
+  "class_names": [
+    "Covid",
+    "Normal",
+    "Viral Pneumonia"
+  ],
+  "test_accuracy": 0.9242424242424242,
+  "is_transfer_model": false,
+  "input_dtype": "float32, scaled to [0,1]",
+  "quantization": "int8 dynamic-range (post-training)",
+  "original_file_size_mb": 98,
+  "compressed_file_size_mb": 8.2,
+  "verified_prediction_agreement_with_original": "15/15 test images, confidence deltas <0.005"
+}
