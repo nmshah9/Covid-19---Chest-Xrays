@@ -137,10 +137,10 @@ def save_model_robust(model, model_dir, model_name):
     """
     os.makedirs(model_dir, exist_ok=True)
 
-    keras_path = os.path.join(model_dir, f"{model_name}.keras")
+    keras_path = os.path.join(model_dir, f"{model_name}.tflite")
     model.save(keras_path)
 
-    weights_path = os.path.join(model_dir, f"{model_name}.weights.h5")
+    weights_path = os.path.join(model_dir, f"{model_name}.weights.tflite")
     model.save_weights(weights_path)
 
     return keras_path, weights_path
@@ -152,7 +152,7 @@ def load_model_robust(model_dir, model_name, rebuild_fn=None, rebuild_kwargs=Non
     if that fails for any reason, rebuild the architecture from code
     (via rebuild_fn/rebuild_kwargs) and load just the weights instead.
     """
-    keras_path = os.path.join(model_dir, f"{model_name}.keras")
+    keras_path = os.path.join(model_dir, f"{model_name}.tflite")
     try:
         return tf.keras.models.load_model(keras_path)
     except Exception as e:
@@ -161,6 +161,6 @@ def load_model_robust(model_dir, model_name, rebuild_fn=None, rebuild_kwargs=Non
         if rebuild_fn is None:
             raise
         model = rebuild_fn(**(rebuild_kwargs or {}))
-        weights_path = os.path.join(model_dir, f"{model_name}.weights.h5")
+        weights_path = os.path.join(model_dir, f"{model_name}.weights.tflite")
         model.load_weights(weights_path)
         return model
