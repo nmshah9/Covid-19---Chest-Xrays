@@ -1,0 +1,12 @@
+tensorflow==2.21.0
+keras-tuner==1.4.8
+tensorboard==2.21.0
+scikit-learn==1.8.0
+numpy==2.4.4
+pandas==3.0.2
+matplotlib==3.10.8
+seaborn==0.13.2
+pillow==12.1.1
+streamlit==1.62.0
+ipykernel
+joblib
