@@ -24,23 +24,19 @@ import json
 import numpy as np
 import streamlit as st
 import matplotlib.pyplot as plt
+import tensorflow as tf
 
 from preprocessing import load_and_preprocess_image, CLASS_NAMES
-from model_utils import load_model_robust, build_basic_cnn, build_transfer_model
 
 MODEL_DIR = "models"
-MODEL_NAME = "best_model"
+MODEL_NAME = "best_model.tflite"
 
 st.set_page_config(page_title="COVID-19 X-ray Classifier", page_icon="🫁", layout="centered")
 
-
-@st.cache_resource(show_spinner="Loading model...")
-def get_model_and_metadata():
+@st.cache_resource(show_spinner="Loading TFLite model...")
+def get_interpreter_and_metadata():
     """
-    Loaded once per app session (Streamlit caches the return value across
-    reruns). Reads metadata.json to know which architecture the saved
-    weights belong to, in case the primary .keras load fails and we need
-    the weights-only fallback (see model_utils.load_model_robust).
+    Load the TFLite model and metadata.json once per app session.
     """
     metadata_path = os.path.join(MODEL_DIR, "metadata.json")
     if not os.path.exists(metadata_path):
@@ -49,20 +45,30 @@ def get_model_and_metadata():
     with open(metadata_path) as f:
         metadata = json.load(f)
 
-    img_size = tuple(metadata["img_size"])
-    input_shape = (*img_size, 3)
+    model_path = os.path.join(MODEL_DIR, MODEL_NAME)
+    if not os.path.exists(model_path):
+        return None, metadata
 
-    if metadata.get("is_transfer_model"):
-        rebuild_fn = build_transfer_model
-    else:
-        rebuild_fn = build_basic_cnn
+    interpreter = tf.lite.Interpreter(model_path=model_path)
+    interpreter.allocate_tensors()
 
-    model = load_model_robust(
-        MODEL_DIR, MODEL_NAME,
-        rebuild_fn=rebuild_fn,
-        rebuild_kwargs={"input_shape": input_shape},
-    )
-    return model, metadata
+    return interpreter, metadata
+
+
+def run_inference(interpreter, img_array):
+    """
+    Run inference on a preprocessed image using the TFLite interpreter.
+    """
+    input_details = interpreter.get_input_details()
+    output_details = interpreter.get_output_details()
+
+    # Ensure float32 input
+    img_array = img_array.astype(np.float32)
+
+    interpreter.set_tensor(input_details[0]['index'], img_array)
+    interpreter.invoke()
+    output_data = interpreter.get_tensor(output_details[0]['index'])
+    return output_data[0]  # probabilities vector
 
 
 def main():
@@ -78,12 +84,12 @@ def main():
         icon="⚠️",
     )
 
-    model, metadata = get_model_and_metadata()
-    if model is None:
+    interpreter, metadata = get_interpreter_and_metadata()
+    if interpreter is None:
         st.error(
             f"No trained model found in `{MODEL_DIR}/`. "
             f"Run `python train.py` (or the notebook end-to-end) first "
-            f"to create `{MODEL_DIR}/{MODEL_NAME}.tflite`."
+            f"to create `{MODEL_DIR}/{MODEL_NAME}`."
         )
         return
 
@@ -102,12 +108,12 @@ def main():
         with col1:
             st.image(uploaded_file, caption="Uploaded X-ray", use_container_width=True)
 
-        # THE critical line: identical preprocessing to training.
+        # Identical preprocessing to training
         uploaded_file.seek(0)
         img_array = load_and_preprocess_image(uploaded_file)
 
         with st.spinner("Classifying..."):
-            probabilities = model.predict(img_array, verbose=0)[0]
+            probabilities = run_inference(interpreter, img_array)
 
         predicted_idx = int(np.argmax(probabilities))
         predicted_class = CLASS_NAMES[predicted_idx]
@@ -124,7 +130,8 @@ def main():
 
         st.subheader("Confidence by class")
         fig, ax = plt.subplots(figsize=(5, 3))
-        bars = ax.barh(CLASS_NAMES, probabilities * 100, color=["#d62728", "#2ca02c", "#ff7f0e"])
+        bars = ax.barh(CLASS_NAMES, probabilities * 100,
+                       color=["#d62728", "#2ca02c", "#ff7f0e"])
         ax.set_xlabel("Confidence (%)")
         ax.set_xlim(0, 100)
         for bar, prob in zip(bars, probabilities):
@@ -135,4 +142,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    
