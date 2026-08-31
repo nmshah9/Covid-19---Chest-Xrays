@@ -18,7 +18,6 @@ Design choices worth knowing:
   every user interaction, so the app stays responsive after the first
   (slower) load.
 """
-
 import os
 import json
 import numpy as np
@@ -29,14 +28,13 @@ import tensorflow as tf
 from preprocessing import load_and_preprocess_image, CLASS_NAMES
 
 MODEL_DIR = "models"
-MODEL_NAME = "best_model_int8.tflite"
 
 st.set_page_config(page_title="COVID-19 X-ray Classifier", page_icon="🫁", layout="centered")
 
 @st.cache_resource(show_spinner="Loading TFLite model...")
 def get_interpreter_and_metadata():
     """
-    Load the TFLite model and metadata.json once per app session.
+    Load the TFLite model (prefers float32, falls back to int8) and metadata.json once per app session.
     """
     metadata_path = os.path.join(MODEL_DIR, "metadata.json")
     if not os.path.exists(metadata_path):
@@ -45,13 +43,24 @@ def get_interpreter_and_metadata():
     with open(metadata_path) as f:
         metadata = json.load(f)
 
-    model_path = os.path.join(MODEL_DIR, MODEL_NAME)
-    if not os.path.exists(model_path):
+    # Prefer float32 model, fallback to int8
+    float_model_path = os.path.join(MODEL_DIR, "best_model.tflite")
+    int8_model_path = os.path.join(MODEL_DIR, "best_model_int8.tflite")
+
+    if os.path.exists(float_model_path):
+        model_path = float_model_path
+        model_type = "Float32"
+    elif os.path.exists(int8_model_path):
+        model_path = int8_model_path
+        model_type = "Int8 Quantized"
+    else:
         return None, metadata
 
     interpreter = tf.lite.Interpreter(model_path=model_path)
     interpreter.allocate_tensors()
 
+    # Add model type info to metadata for display
+    metadata["model_type"] = model_type
     return interpreter, metadata
 
 
@@ -89,7 +98,7 @@ def main():
         st.error(
             f"No trained model found in `{MODEL_DIR}/`. "
             f"Run `python train.py` (or the notebook end-to-end) first "
-            f"to create `{MODEL_DIR}/{MODEL_NAME}`."
+            f"to create `best_model.tflite` or `best_model_int8.tflite`."
         )
         return
 
@@ -97,6 +106,7 @@ def main():
         st.write(f"**Architecture:** {metadata['best_model_name']}")
         st.write(f"**Test accuracy:** {metadata['test_accuracy']:.2%}")
         st.write(f"**Input image size:** {metadata['img_size'][0]}x{metadata['img_size'][1]}")
+        st.write(f"**Model type:** {metadata.get('model_type','Unknown')}")
 
     uploaded_file = st.file_uploader(
         "Choose a chest X-ray image", type=["jpg", "jpeg", "png"]
