@@ -29,7 +29,7 @@ import tensorflow as tf
 from preprocessing import load_and_preprocess_image, CLASS_NAMES
 
 MODEL_DIR = "models"
-MODEL_NAME = "best_model.tflite"
+MODEL_NAME = "best_model_int8.tflite"
 
 st.set_page_config(page_title="COVID-19 X-ray Classifier", page_icon="🫁", layout="centered")
 
