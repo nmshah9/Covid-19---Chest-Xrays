@@ -103,7 +103,7 @@ def main():
         return
 
     with st.expander("ℹ️ About the loaded model"):
-        st.write(f"**Architecture:** {metadata['best_model_name']}")
+        st.write(f"**Architecture:** {metadata['best_model_int8']}")
         st.write(f"**Test accuracy:** {metadata['test_accuracy']:.2%}")
         st.write(f"**Input image size:** {metadata['img_size'][0]}x{metadata['img_size'][1]}")
         st.write(f"**Model type:** {metadata.get('model_type','Unknown')}")
