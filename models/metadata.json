@@ -1,5 +1,5 @@
 {
-    "best_model_name": best_model_init8,                     # e.g. "Model 2 - Transfer Learning"
+    "best_model_name": best_model_int8,                     # e.g. "Model 2 - Transfer Learning"
     "img_size": list(IMG_SIZE),                             # [128, 128]
     "class_names": CLASS_NAMES,                             # ["Covid", "Normal", "Viral Pneumonia"]
     "test_accuracy": float(best_row["test_accuracy"]),      # numeric accuracy
