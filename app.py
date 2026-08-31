@@ -26,6 +26,7 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 
 from preprocessing import load_and_preprocess_image, CLASS_NAMES
+from PIL import Image
 
 MODEL_DIR = "models"
 
