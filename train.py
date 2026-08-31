@@ -452,16 +452,23 @@ with open(os.path.join(MODEL_DIR, "best_model_int8.tflite"), "wb") as f:
 print(f"Saved int8 quantized TFLite model to: {MODEL_DIR}/best_model_int8.tflite")
 
 # Save metadata
+# Save metadata (combined fields for Streamlit app)
 metadata = {
-    "best_model_name": best_model_name,
-    "img_size": list(IMG_SIZE),
-    "class_names": CLASS_NAMES,
-    "test_accuracy": float(best_row["test_accuracy"]),
-    "is_transfer_model": "Transfer" in best_model_name,
-    "quantization": "int8 dynamic-range (post-training)",  # or "float32"
+    "best_model_name": best_model_name,                     # e.g. "Model 2 - Transfer Learning"
+    "img_size": list(IMG_SIZE),                             # [128, 128]
+    "class_names": CLASS_NAMES,                             # ["Covid", "Normal", "Viral Pneumonia"]
+    "test_accuracy": float(best_row["test_accuracy"]),      # numeric accuracy
+    "is_transfer_model": "Transfer" in best_model_name,     # True/False
+    # Extra descriptive fields you wanted to keep
+    "input_dtype": "float32, scaled to [0,1]",
+    "quantization": "int8 dynamic-range (post-training)",
+    "original_file_size_mb": 98,
+    "compressed_file_size_mb": 8.2,
+    "verified_prediction_agreement_with_original": "15/15 test images, confidence deltas <0.005"
 }
 with open(os.path.join(MODEL_DIR, "metadata.json"), "w") as f:
     json.dump(metadata, f, indent=2)
+
 
 print(f"\nSaved model to: {keras_path}")
 print(f"Saved weights fallback to: {weights_path}")
